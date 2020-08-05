@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 from settings import Settings
 from key import Key
 
@@ -20,18 +21,28 @@ class EnigmaSimulator:
         self.screen_height = 600
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Enigma Simulator {0}".format(version))
-        self.background = pygame.image.load("images/background.png")
+        self.background = pygame.image.load(self._resource_path("images/background.png"))
         self.screen.blit(self.background, (0, 0))
 
         # load sound effect files
-        self.key_down_sfx = pygame.mixer.Sound('sounds/key-down.wav')
-        self.key_up_sfx = pygame.mixer.Sound('sounds/key-up.wav')
+        self.key_down_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-down.wav"))
+        self.key_up_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-up.wav"))
 
         # load settings
         self.settings = Settings(self)
 
         self.keys = pygame.sprite.Group()
         self._create_keyboard()
+
+    def _resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
 
     def run_sim(self):
         # start main loop for the simulator
