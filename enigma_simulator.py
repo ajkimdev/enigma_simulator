@@ -27,6 +27,8 @@ class EnigmaSimulator:
         # load sound effect files
         self.key_down_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-down.wav"))
         self.key_up_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-up.wav"))
+        self.key_down_sfx.set_volume(0.5)
+        self.key_up_sfx.set_volume(0.5)
 
         # load settings
         self.settings = Settings(self)
@@ -57,25 +59,44 @@ class EnigmaSimulator:
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                self._check_key_pressed(mouse_pos)
+                self._check_mousebtndown_event(mouse_pos)
             elif event.type == pygame.MOUSEBUTTONUP:
-                self._check_key_released()
+                self._check_keyreleased_event()
+            elif event.type == pygame.KEYDOWN:
+                self._check_keydown_event(event)
+            elif event.type == pygame.KEYUP:
+                self._check_keyreleased_event()
 
-    def _check_key_released(self):
+    def _check_keydown_event(self, event):
+        if len(event.unicode) > 0:
+            key_ascii = ord(event.unicode)
+            if (key_ascii > 64 and key_ascii < 91) or (key_ascii > 96 and key_ascii < 123):
+                upper_key = chr(key_ascii).upper()
+                print("{0} hitted".format(upper_key))
+                for key in self.keys:
+                    if key.letter == upper_key:
+                        self._check_key_pressed(key)
+                        break
+
+    def _check_mousebtndown_event(self, mouse_pos):
+        for key in self.keys:
+            if key.rect.collidepoint(mouse_pos):
+                print("{0} clicked".format(key.letter))
+                self._check_key_pressed(key)
+                break
+
+    def _check_key_pressed(self, key):
+        # response to key pressing
+        key.pressed()
+        self.key_down_sfx.play()
+        self.keys.draw(self.screen)
+
+    def _check_keyreleased_event(self):
         # response to key releasing
         for key in self.keys:
             if key.is_pressed:
                 key.released()
                 self.key_up_sfx.play()
-                self.keys.draw(self.screen)
-
-    def _check_key_pressed(self, mouse_pos):
-        # response to key pressing
-        for key in self.keys:
-            if key.rect.collidepoint(mouse_pos):
-                print("{0} clicked".format(key.letter))
-                key.pressed()
-                self.key_down_sfx.play()
                 self.keys.draw(self.screen)
 
     def _create_keyboard(self):
