@@ -7,9 +7,8 @@ from pygame.sprite import Sprite
 class Key(Sprite):
     """A class to manage key object and its functions"""
 
-    def __init__(self, enigma_sim, letter):
+    def __init__(self, letter):
         super().__init__()
-        self.screen = enigma_sim.screen
         self.letter = letter
 
         # load images for key

@@ -3,9 +3,10 @@ import sys
 import os
 from settings import Settings
 from key import Key
+from lamp import Lamp
 
 
-version = "v0.1"
+version = "v0.2"
 
 
 class EnigmaSimulator:
@@ -35,6 +36,9 @@ class EnigmaSimulator:
 
         self.keys = pygame.sprite.Group()
         self._create_keyboard()
+
+        self.lamps = pygame.sprite.Group()
+        self._create_lampboard()
 
     def _resource_path(self, relative_path):
         """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -91,6 +95,12 @@ class EnigmaSimulator:
         self.key_down_sfx.play()
         self.keys.draw(self.screen)
 
+        # response to lamp on
+        for lamp in self.lamps:
+            if lamp.letter == key.letter:
+                lamp.on()
+                self.lamps.draw(self.screen)
+
     def _check_keyreleased_event(self):
         # response to key releasing
         for key in self.keys:
@@ -99,8 +109,46 @@ class EnigmaSimulator:
                 self.key_up_sfx.play()
                 self.keys.draw(self.screen)
 
+        # response to lamp off
+        for lamp in self.lamps:
+            if lamp.is_on:
+                lamp.off()
+                self.lamps.draw(self.screen)
+
+    def _create_lampboard(self):
+        # create lamp sprites and put in lamps sprite group
+        lamp_top = "QWERTZUIO"
+        lamp_mid = "ASDFGHJK"
+        lamp_btm = "PYXCVBNML"
+
+        lamp_top_x = 69
+        lamp_top_y = 253
+        for ltr in lamp_top:
+            lamp = Lamp(ltr)
+            lamp.rect.center = (lamp_top_x, lamp_top_y)
+            self.lamps.add(lamp)
+            lamp_top_x += 44
+
+        lamp_mid_x = 87
+        lamp_mid_y = 301
+        for ltr in lamp_mid:
+            lamp = Lamp(ltr)
+            lamp.rect.center = (lamp_mid_x, lamp_mid_y)
+            self.lamps.add(lamp)
+            lamp_mid_x += 44
+
+        lamp_btm_x = 59
+        lamp_btm_y = 349
+        for ltr in lamp_btm:
+            lamp = Lamp(ltr)
+            lamp.rect.center = (lamp_btm_x, lamp_btm_y)
+            self.lamps.add(lamp)
+            lamp_btm_x += 44
+
+        self.lamps.draw(self.screen)
+
     def _create_keyboard(self):
-        # create key sprites and put in sprite group
+        # create key sprites and put in keys sprite group
         key_top = "QWERTZUIO"
         key_mid = "ASDFGHJK"
         key_btm = "PYXCVBNML"
@@ -108,7 +156,7 @@ class EnigmaSimulator:
         key_top_x = 69
         key_top_y = 407
         for ltr in key_top:
-            key = Key(self, ltr)
+            key = Key(ltr)
             key.rect.center = (key_top_x, key_top_y)
             self.keys.add(key)
             key_top_x += 44
@@ -116,7 +164,7 @@ class EnigmaSimulator:
         key_mid_x = 87
         key_mid_y = 455
         for ltr in key_mid:
-            key = Key(self, ltr)
+            key = Key(ltr)
             key.rect.center = (key_mid_x, key_mid_y)
             self.keys.add(key)
             key_mid_x += 44
@@ -124,7 +172,7 @@ class EnigmaSimulator:
         key_btm_x = 59
         key_btm_y = 503
         for ltr in key_btm:
-            key = Key(self, ltr)
+            key = Key(ltr)
             key.rect.center = (key_btm_x, key_btm_y)
             self.keys.add(key)
             key_btm_x += 44
