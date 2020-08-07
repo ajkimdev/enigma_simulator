@@ -22,33 +22,23 @@ class EnigmaSimulator:
         self.screen_height = 600
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Enigma Simulator {0}".format(version))
-        self.background = pygame.image.load(self._resource_path("images/background.png"))
-        self.screen.blit(self.background, (0, 0))
-
-        # load sound effect files
-        self.key_down_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-down.wav"))
-        self.key_up_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-up.wav"))
-        self.key_down_sfx.set_volume(0.5)
-        self.key_up_sfx.set_volume(0.5)
 
         # load settings
         self.settings = Settings(self)
 
+        # load background images
+        self.screen.blit(self.settings.screen, (0, 0))
+
+        # load sound effect from settings
+        self.key_down_sfx = self.settings.sfxs[0]
+        self.key_up_sfx = self.settings.sfxs[1]
+
         self.keys = pygame.sprite.Group()
-        self._create_keyboard()
-
         self.lamps = pygame.sprite.Group()
+
+        self._create_keyboard()
         self._create_lampboard()
-
-    def _resource_path(self, relative_path):
-        """ Get absolute path to resource, works for dev and for PyInstaller """
-        try:
-            # PyInstaller creates a temp folder and stores path in _MEIPASS
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-
-        return os.path.join(base_path, relative_path)
+        self._create_paper_roll()
 
     def run_sim(self):
         # start main loop for the simulator
@@ -114,6 +104,9 @@ class EnigmaSimulator:
             if lamp.is_on:
                 lamp.off()
                 self.lamps.draw(self.screen)
+
+    def _create_paper_roll(self):
+        pass
 
     def _create_lampboard(self):
         # create lamp sprites and put in lamps sprite group
