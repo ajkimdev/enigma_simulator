@@ -4,9 +4,9 @@ import os
 from settings import Settings
 from key import Key
 from lamp import Lamp
+from paper_roll import PaperRoll
 
-
-version = "v0.2"
+version = "v0.3"
 
 
 class EnigmaSimulator:
@@ -23,24 +23,43 @@ class EnigmaSimulator:
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Enigma Simulator {0}".format(version))
 
-        # load settings
-        self.settings = Settings(self)
-
         # load background images
-        self.screen.blit(self.settings.screen, (0, 0))
+        self.background = pygame.image.load(self._resource_path("images/background.png"))
+        self.screen.blit(self.background, (0, 0))
+        self.lamp_panel = pygame.image.load(self._resource_path("images/i_lamp_panel.png"))
+        self.screen.blit(self.lamp_panel, (0, 0))
 
-        # load sound effect from settings
-        self.key_down_sfx = self.settings.sfxs[0]
-        self.key_up_sfx = self.settings.sfxs[1]
+        # load settings and properties
+        self.settings = Settings()
+
+        # load sound effect files
+        self.key_down_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-down.wav"))
+        self.key_down_sfx.set_volume(0.5)
+        self.key_up_sfx = pygame.mixer.Sound(self._resource_path("sounds/key-up.wav"))
+        self.key_up_sfx.set_volume(0.5)
 
         self.keys = pygame.sprite.Group()
         self.lamps = pygame.sprite.Group()
+        self.paper_rolls = pygame.sprite.GroupSingle()
 
-        self._create_keyboard()
-        self._create_lampboard()
-        self._create_paper_roll()
+    def _resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
 
     def run_sim(self):
+        self._draw_keyboard()
+        self._draw_lampboard()
+        self._draw_paper_roll()
+        # self._draw_menu()
+        # self._draw_locking()
+        # self._draw_plug_board()
+
         # start main loop for the simulator
         while True:
             self._check_event()
@@ -73,11 +92,18 @@ class EnigmaSimulator:
                         break
 
     def _check_mousebtndown_event(self, mouse_pos):
-        for key in self.keys:
-            if key.rect.collidepoint(mouse_pos):
-                print("{0} clicked".format(key.letter))
-                self._check_key_pressed(key)
-                break
+        paper_roll_clicked = self.paper_rolls.sprite.rect.collidepoint(mouse_pos)
+        if paper_roll_clicked:
+            self.screen.blit(self.background, (0, 0))
+            self.screen.blit(self.lamp_panel, (0, 0))
+            self.paper_rolls.sprite.clicked()
+            self.paper_rolls.draw(self.screen)
+        else:
+            for key in self.keys:
+                if key.rect.collidepoint(mouse_pos):
+                    print("{0} clicked".format(key.letter))
+                    self._check_key_pressed(key)
+                    break
 
     def _check_key_pressed(self, key):
         # response to key pressing
@@ -105,10 +131,21 @@ class EnigmaSimulator:
                 lamp.off()
                 self.lamps.draw(self.screen)
 
-    def _create_paper_roll(self):
+    def _draw_menu(self):
         pass
 
-    def _create_lampboard(self):
+    def _draw_locking(self):
+        pass
+
+    def _draw_paper_roll(self):
+        paper_roll = PaperRoll()
+        paper_roll.rect.x = 440
+        paper_roll.rect.y = 206
+        self.paper_rolls.add(paper_roll)
+
+        self.paper_rolls.draw(self.screen)
+
+    def _draw_lampboard(self):
         # create lamp sprites and put in lamps sprite group
         lamp_top = "QWERTZUIO"
         lamp_mid = "ASDFGHJK"
@@ -140,7 +177,7 @@ class EnigmaSimulator:
 
         self.lamps.draw(self.screen)
 
-    def _create_keyboard(self):
+    def _draw_keyboard(self):
         # create key sprites and put in keys sprite group
         key_top = "QWERTZUIO"
         key_mid = "ASDFGHJK"
