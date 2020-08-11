@@ -56,9 +56,6 @@ class EnigmaSimulator:
         self._draw_keyboard()
         self._draw_lampboard()
         self._draw_paper_roll()
-        # self._draw_menu()
-        # self._draw_locking()
-        # self._draw_plug_board()
 
         # start main loop for the simulator
         while True:
@@ -130,12 +127,6 @@ class EnigmaSimulator:
             if lamp.is_on:
                 lamp.off()
                 self.lamps.draw(self.screen)
-
-    def _draw_menu(self):
-        pass
-
-    def _draw_locking(self):
-        pass
 
     def _draw_paper_roll(self):
         paper_roll = PaperRoll()
